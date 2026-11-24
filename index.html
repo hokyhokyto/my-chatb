@@ -73,11 +73,15 @@
     .header-title { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header-sub { font-size: 12px; opacity: 0.85; }
     .icon-btn {
-      background: transparent; border: none; color: #fff; font-size: 20px;
+      background: transparent; border: none; color: #fff; font-size: 19px;
       cursor: pointer; padding: 6px 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     }
     .icon-btn:active { background: rgba(255,255,255,0.18); }
-    .header-actions { display: flex; align-items: center; gap: 4px; }
+    .icon-btn.admin-active {
+      background: rgba(255, 215, 0, 0.25);
+      box-shadow: 0 0 0 1.5px #ffd700;
+    }
+    .header-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
     /* التبويبات */
     .tabs {
@@ -92,12 +96,6 @@
     .badge {
       background: #25d366; color: #0b141a; font-size: 11px; font-weight: 700;
       padding: 1px 6px; border-radius: 10px; margin-right: 4px; display: none;
-    }
-
-    /* تنبيه إعداد المفاتيح */
-    #config-warning {
-      display: none; background: #fff3cd; color: #664d03; padding: 12px;
-      font-size: 13px; text-align: center; border-bottom: 1px solid #ffecb5;
     }
 
     /* منطقة المحتوى */
@@ -126,9 +124,22 @@
       font-size: 12.5px; font-weight: 700; margin-bottom: 3px; cursor: pointer;
       display: inline-flex; align-items: center; gap: 4px;
     }
-    .msg-time {
-      font-size: 10.5px; color: var(--wa-muted); text-align: left; margin-top: 3px; direction: ltr;
+    .msg-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-top: 4px;
     }
+    .msg-time {
+      font-size: 10.5px; color: var(--wa-muted); direction: ltr; margin-right: auto;
+    }
+    .admin-del-btn {
+      display: none; align-items: center; gap: 3px;
+      background: #fdecea; color: var(--danger); border: 1px solid #f5c2c7;
+      border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 700;
+      cursor: pointer;
+    }
+    .admin-del-btn:active { background: #f8d7da; }
+    .messages-area.admin-mode .admin-del-btn { display: inline-flex; }
+
     .msg-media-img {
       max-width: 240px; max-height: 280px; width: 100%; border-radius: 8px;
       display: block; margin-top: 4px; cursor: pointer; object-fit: cover;
@@ -137,34 +148,34 @@
       max-width: 250px; max-height: 280px; width: 100%; border-radius: 8px;
       display: block; margin-top: 4px; background: #000;
     }
-    .msg-media-audio { width: 230px; max-width: 100%; height: 38px; margin-top: 4px; }
+    .msg-media-audio { width: 220px; max-width: 100%; height: 38px; margin-top: 4px; }
     .sticker-emoji { font-size: 56px; line-height: 1.1; display: block; }
     .sticker-text-badge {
       display: inline-block; padding: 10px 16px; border-radius: 18px; color: #fff;
       font-size: 17px; font-weight: 800; box-shadow: 0 3px 8px rgba(0,0,0,0.18);
     }
 
-    /* شريط الكتابة السفلي */
+    /* شريط الكتابة السفلي (مع إصلاح تناسق زر المايكروفون) */
     .composer-wrap {
       background: #f0f2f5; padding: 7px 8px; flex-shrink: 0; position: relative;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid #e0e0e0; width: 100%;
     }
-    .composer { display: flex; align-items: flex-end; gap: 6px; }
+    .composer { display: flex; align-items: center; gap: 6px; width: 100%; }
     .input-box {
-      flex: 1; background: #fff; border-radius: 24px; padding: 6px 10px;
-      display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      flex: 1; min-width: 0; background: #fff; border-radius: 24px; padding: 5px 8px;
+      display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     }
     .input-box input {
-      flex: 1; border: none; outline: none; font-size: 15px; background: transparent;
-      padding: 6px 4px; color: var(--wa-text);
+      flex: 1; min-width: 0; width: 100%; border: none; outline: none; font-size: 15px;
+      background: transparent; padding: 6px 4px; color: var(--wa-text);
     }
     .composer-icon {
-      background: transparent; border: none; font-size: 21px; color: var(--wa-muted);
-      cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;
+      background: transparent; border: none; font-size: 20px; color: var(--wa-muted);
+      cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .action-fab {
-      width: 46px; height: 46px; border-radius: 50%; border: none;
-      background: var(--wa-teal); color: #fff; font-size: 20px; cursor: pointer;
+      width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: var(--wa-teal); color: #fff; font-size: 19px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
@@ -232,7 +243,7 @@
     .user-sub { font-size: 12.5px; color: var(--wa-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
     .empty-state { text-align: center; padding: 40px 20px; color: var(--wa-muted); font-size: 14px; line-height: 1.7; }
 
-    /* نافذة الإجراءات (محادثة خاصة / إبلاغ / حظر) */
+    /* نافذة الإجراءات */
     .modal-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
       z-index: 200; align-items: center; justify-content: center; padding: 20px;
@@ -256,11 +267,11 @@
     }
     #lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
 
-    /* مؤشر الرفع */
+    /* إشعارات سريعة */
     #upload-toast {
       display: none; position: fixed; top: 68px; left: 50%; transform: translateX(-50%);
       background: #111b21; color: #fff; padding: 8px 16px; border-radius: 20px;
-      font-size: 13px; z-index: 250; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      font-size: 13px; z-index: 250; box-shadow: 0 4px 12px rgba(0,0,0,0.25); white-space: nowrap;
     }
   </style>
 </head>
@@ -302,13 +313,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="icon-btn" id="admin-btn" title="وضع المشرف">🛡️</button>
         <button class="icon-btn" id="chat-options-btn" style="display:none;" title="خيارات">⋮</button>
         <button class="icon-btn" id="logout-btn" title="تغيير الاسم">🚪</button>
       </div>
-    </div>
-
-    <div id="config-warning">
-      ⚠️ تنبيه: يرجى وضع رابط مشروع Supabase والمفتاح العام داخل الكود في أعلى قسم script لكي تعمل الدردشة.
     </div>
 
     <div class="tabs" id="main-tabs">
@@ -390,25 +398,27 @@
 
   <script>
     // =====================================================================
-    // 🔴 خطوة مهمة جداً: استبدل النصين بالأسفل برابط مشروعك ومفتاحك العام 🔴
+    // إعدادات الاتصال بقاعدة البيانات (جاهزة ومفعلة)
     // =====================================================================
     const SUPABASE_URL = "https://bhuhzgdpdxxccffpiyjw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_EcBS-NQRlfbcUJwNsZ7EiQ_DW2ieei6";
+
+    // 🔴 غيّر الرقم "2026" إلى رمز سري خاص بك وحدك للتحكم في حذف أي رسالة 🔴
+    const ADMIN_PIN = "6161";
     // =====================================================================
 
-    const isConfigured = SUPABASE_URL.startsWith("https://") && !SUPABASE_KEY.includes("ضع_المفتاح");
-    const sb = isConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // بيانات المستخدم الحالي
     let currentUser = null;
     let selectedColor = "#00a884";
-    let activeTab = "public";       // public | private | users
-    let activePartner = null;       // { id, nickname, avatar_color } عند فتح شات خاص
+    let activeTab = "public";
+    let activePartner = null;
     let modalTargetUser = null;
     let allUsersMap = {};
-    let privatePartners = {};       // تخزين آخر رسالة لكل محادثة خاصة
+    let privatePartners = {};
     let renderedMsgIds = new Set();
     let blockedUsers = JSON.parse(localStorage.getItem("blocked_users") || "[]");
+    let isAdmin = localStorage.getItem("is_chat_admin") === "true";
 
     // متغيرات التسجيل الصوتي
     let mediaRecorder = null;
@@ -417,7 +427,6 @@
     let recordSeconds = 0;
     let shouldSendRecording = false;
 
-    // قائمة الملصقات (إيموجي كبيرة + ملصقات عربية جاهزة)
     const STICKERS = [
       { type: "text", label: "السلام عليكم 🌹", bg: "#008069" },
       { type: "text", label: "أهلاً وسهلاً ✨", bg: "#2563eb" },
@@ -439,7 +448,6 @@
       { type: "emoji", label: "🙏" }
     ];
 
-    // عناصر الصفحة
     const el = (id) => document.getElementById(id);
 
     function escapeHtml(str) {
@@ -462,6 +470,40 @@
     function formatTime(iso) {
       const d = iso ? new Date(iso) : new Date();
       return d.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    // التحكم في وضع المشرف (حذف أي رسالة للجميع)
+    function updateAdminUI() {
+      el("admin-btn").classList.toggle("admin-active", isAdmin);
+      el("messages-area").classList.toggle("admin-mode", isAdmin);
+    }
+
+    el("admin-btn").addEventListener("click", () => {
+      if (isAdmin) {
+        if (confirm("وضع المشرف مفعّل حالياً. هل تريد إغلاقه وإخفاء أزرار الحذف؟")) {
+          isAdmin = false;
+          localStorage.removeItem("is_chat_admin");
+          updateAdminUI();
+          showToast("تم إغلاق وضع المشرف", 2000);
+        }
+        return;
+      }
+      const entered = prompt("أدخل رمز المشرف السري لتفعيل حذف الرسائل:");
+      if (entered === null) return;
+      if (entered.trim() === ADMIN_PIN) {
+        isAdmin = true;
+        localStorage.setItem("is_chat_admin", "true");
+        updateAdminUI();
+        showToast("تم تفعيل وضع المشرف 🛡️ يمكنك حذف أي رسالة الآن", 3000);
+      } else {
+        alert("رمز المشرف غير صحيح.");
+      }
+    });
+
+    function removeMessageFromDOM(msgId) {
+      const rowEl = document.getElementById("msg-row-" + msgId);
+      if (rowEl) rowEl.remove();
+      renderedMsgIds.delete(msgId);
     }
 
     // اختيار لون الصورة الرمزية
@@ -504,11 +546,7 @@
       el("login-screen").style.display = "none";
       el("app").style.display = "flex";
       el("header-sub").textContent = "متصل باسم: " + nickname;
-
-      if (!isConfigured) {
-        el("config-warning").style.display = "block";
-        return;
-      }
+      updateAdminUI();
 
       await updatePresence();
       setInterval(updatePresence, 30000);
@@ -542,9 +580,7 @@
       });
     }
 
-    // تحميل المستخدمين المتواجدين
     async function loadUsers() {
-      if (!sb) return;
       const { data } = await sb.from("chat_users").select("*").order("last_seen", { ascending: false }).limit(80);
       if (!data) return;
       allUsersMap = {};
@@ -580,9 +616,8 @@
       });
     }
 
-    // تحميل قائمة المحادثات الخاصة
     async function loadPrivateConversations() {
-      if (!sb || !currentUser) return;
+      if (!currentUser) return;
       const { data } = await sb.from("messages")
         .select("*")
         .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
@@ -638,7 +673,6 @@
       });
     }
 
-    // التنقل بين التبويبات والمحادثة الخاصة
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
         activePartner = null;
@@ -699,9 +733,8 @@
       }
     }
 
-    // تحميل الرسائل (العامة أو الخاصة)
     async function loadMessages() {
-      if (!sb || !currentUser) return;
+      if (!currentUser) return;
       const area = el("messages-area");
       area.innerHTML = '<div class="empty-state">جاري تحميل الرسائل...</div>';
       renderedMsgIds.clear();
@@ -716,7 +749,7 @@
       const { data, error } = await query;
       area.innerHTML = "";
       if (error) {
-        area.innerHTML = '<div class="empty-state">تعذر الاتصال بقاعدة البيانات. تأكد من صحة الرابط والمفتاح.</div>';
+        area.innerHTML = '<div class="empty-state">تعذر تحميل الرسائل، تأكد من اتصال الإنترنت.</div>';
         return;
       }
       if (!data || !data.length) {
@@ -738,12 +771,12 @@
 
       const isMine = msg.sender_id === currentUser.id;
       const row = document.createElement("div");
+      row.id = "msg-row-" + msg.id;
       row.className = "msg-row " + (isMine ? "sent" : "recv");
 
       const bubble = document.createElement("div");
       bubble.className = "bubble" + (msg.msg_type === "sticker" ? " sticker-bubble" : "");
 
-      // عرض اسم المرسل في الغرفة العامة مع إمكانية النقر لفتح خياراته
       if (!isMine && !activePartner) {
         const senderColor = (allUsersMap[msg.sender_id] && allUsersMap[msg.sender_id].avatar_color) || "#008069";
         const nameEl = document.createElement("div");
@@ -760,7 +793,6 @@
         bubble.appendChild(nameEl);
       }
 
-      // محتوى الرسالة حسب النوع
       const body = document.createElement("div");
       if (msg.msg_type === "text") {
         body.innerHTML = escapeHtml(msg.content).replace(/\n/g, "<br>");
@@ -802,19 +834,41 @@
       }
       bubble.appendChild(body);
 
-      const timeEl = document.createElement("div");
+      // شريط الوقت + زر الحذف للمشرف
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "admin-del-btn";
+      delBtn.textContent = "🗑️ حذف";
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (!confirm("هل تريد حذف هذه الرسالة نهائياً من عند الجميع؟")) return;
+        const { error } = await sb.from("messages").delete().eq("id", msg.id);
+        if (error) {
+          alert("تعذر حذف الرسالة، تأكد من اتصال الإنترنت.");
+          return;
+        }
+        removeMessageFromDOM(msg.id);
+        showToast("تم حذف الرسالة من عند الجميع", 2000);
+      });
+
+      const timeEl = document.createElement("span");
       timeEl.className = "msg-time";
       timeEl.textContent = formatTime(msg.created_at);
-      bubble.appendChild(timeEl);
+
+      meta.appendChild(delBtn);
+      meta.appendChild(timeEl);
+      bubble.appendChild(meta);
 
       row.appendChild(bubble);
       area.appendChild(row);
       area.scrollTop = area.scrollHeight;
     }
 
-    // إرسال رسالة إلى قاعدة البيانات
     async function sendMessage(msgType, content, mediaUrl) {
-      if (!sb || !currentUser) return;
+      if (!currentUser) return;
       const payload = {
         sender_id: currentUser.id,
         sender_name: currentUser.nickname,
@@ -831,7 +885,7 @@
       if (data) renderMessage(data);
     }
 
-    // الاستماع للرسائل الفورية (Realtime)
+    // الاستماع الفوري للإرسال والحذف في نفس اللحظة
     function subscribeRealtime() {
       sb.channel("live-chat-channel")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, ({ new: msg }) => {
@@ -846,11 +900,15 @@
           if ((isPublicMsg && !activePartner && activeTab === "public") || isForCurrentPM) {
             renderMessage(msg);
           } else if (msg.receiver_id === currentUser.id && msg.sender_id !== currentUser.id) {
-            // إشعار برسالة خاصة جديدة
             const badge = el("private-badge");
             badge.textContent = Number(badge.textContent || 0) + 1;
             badge.style.display = "inline-block";
             loadPrivateConversations();
+          }
+        })
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, (payload) => {
+          if (payload.old && payload.old.id) {
+            removeMessageFromDOM(payload.old.id);
           }
         })
         .on("postgres_changes", { event: "*", schema: "public", table: "chat_users" }, () => {
@@ -859,7 +917,6 @@
         .subscribe();
     }
 
-    // التحكم في زر الإرسال أو المايكروفون
     const msgInput = el("msg-input");
     const sendOrMicBtn = el("send-or-mic-btn");
 
@@ -868,9 +925,7 @@
     }
     msgInput.addEventListener("input", updateFabIcon);
     msgInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && msgInput.value.trim()) {
-        sendTextNow();
-      }
+      if (e.key === "Enter" && msgInput.value.trim()) sendTextNow();
     });
 
     function sendTextNow() {
@@ -882,14 +937,10 @@
     }
 
     sendOrMicBtn.addEventListener("click", () => {
-      if (msgInput.value.trim().length > 0) {
-        sendTextNow();
-      } else {
-        startVoiceRecording();
-      }
+      if (msgInput.value.trim().length > 0) sendTextNow();
+      else startVoiceRecording();
     });
 
-    // لوحة الملصقات والمرفقات
     el("sticker-btn").addEventListener("click", () => {
       el("attach-menu").style.display = "none";
       const sp = el("sticker-panel");
@@ -912,7 +963,6 @@
       el("video-input").click();
     });
 
-    // ضغط ورفع الصور لتوفير المساحة المجانية
     function compressImage(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -943,14 +993,14 @@
     el("image-input").addEventListener("change", async (e) => {
       const file = e.target.files[0];
       e.target.value = "";
-      if (!file || !sb) return;
+      if (!file) return;
       try {
         showToast("جاري ضغط وإرسال الصورة...");
         const compressed = await compressImage(file);
         const url = await uploadFile(compressed, "jpg", "image/jpeg");
         await sendMessage("image", "صورة", url);
-      } catch (err) {
-        alert("تعذر رفع الصورة. تأكد من تفعيل مخزن chat-media في Supabase.");
+      } catch {
+        alert("تعذر رفع الصورة.");
       } finally {
         hideToast();
       }
@@ -959,26 +1009,25 @@
     el("video-input").addEventListener("change", async (e) => {
       const file = e.target.files[0];
       e.target.value = "";
-      if (!file || !sb) return;
+      if (!file) return;
       if (file.size > 15 * 1024 * 1024) {
-        return alert("حجم الفيديو كبير! الحد الأقصى في النسخة المجانية هو 15 ميجابايت.");
+        return alert("حجم الفيديو كبير! الحد الأقصى هو 15 ميجابايت.");
       }
       try {
         showToast("جاري رفع الفيديو...");
         const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
         const url = await uploadFile(file, ext, file.type || "video/mp4");
         await sendMessage("video", "فيديو", url);
-      } catch (err) {
+      } catch {
         alert("تعذر رفع الفيديو.");
       } finally {
         hideToast();
       }
     });
 
-    // التسجيل الصوتي
     async function startVoiceRecording() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        return alert("متصفحك لا يدعم التسجيل الصوتي أو أن الرابط لا يبدأ بـ https.");
+        return alert("متصفحك لا يدعم التسجيل الصوتي.");
       }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1033,7 +1082,6 @@
       if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
     });
 
-    // نافذة الخيارات (محادثة خاصة + إبلاغ + حظر)
     function openUserModal(user) {
       modalTargetUser = user;
       el("modal-username").textContent = user.nickname;
@@ -1054,7 +1102,7 @@
 
     el("modal-report-btn").addEventListener("click", async () => {
       el("user-modal").style.display = "none";
-      if (!modalTargetUser || !sb) return;
+      if (!modalTargetUser) return;
       const reason = prompt("ما سبب الإبلاغ عن " + modalTargetUser.nickname + "؟", "محتوى غير لائق");
       if (!reason) return;
       await sb.from("reports").insert({
@@ -1082,7 +1130,6 @@
       showToast("تم حظر المستخدم بنجاح", 2500);
     });
 
-    // التشغيل عند فتح الصفحة
     initStickers();
     const saved = localStorage.getItem("chat_user");
     if (saved) {
