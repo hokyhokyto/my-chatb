@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0f17" />
+  <title>استوديو سونو V6 | إنتاج ومطابقة الصوت</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #131a26;
+      --card-2: #1a2333;
+      --border: #263247;
+      --accent: #10b981;
+      --accent-2: #059669;
+      --gold: #f59e0b;
+      --text: #f3f4f6;
+      --muted: #94a3b8;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 14px 12px 40px; }
+    .container { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+    .hero {
+      background: linear-gradient(135deg, #0f2922 0%, #131a26 65%, #1e1b2e 100%);
+      border: 1px solid #1f3b33; border-radius: 18px; padding: 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .hero h1 { font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .hero p { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+    .credit-pill {
+      background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7; border-radius: 12px; padding: 8px 12px; text-align: center;
+      font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer;
+    }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .card-title {
+      font-size: 15px; font-weight: 800; color: #fff;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .badge-tag {
+      font-size: 11px; padding: 3px 8px; border-radius: 20px;
+      background: rgba(245, 158, 11, 0.16); color: #fcd34d; font-weight: 700;
+    }
+
+    label { font-size: 13px; color: #cbd5e1; font-weight: 600; display: block; margin-bottom: 6px; }
+    input[type="text"], input[type="password"], input[type="number"], select, textarea {
+      width: 100%; background: var(--card-2); border: 1px solid var(--border);
+      color: #fff; border-radius: 11px; padding: 11px 12px; font-size: 14px; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* صندوق رفع العينة */
+    .upload-zone {
+      border: 1.5px dashed #334155; border-radius: 14px; padding: 16px;
+      text-align: center; background: rgba(26, 35, 51, 0.55); cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .upload-zone:hover, .upload-zone.ready { border-color: var(--accent); }
+    .upload-zone .icon { font-size: 28px; margin-bottom: 6px; }
+    .upload-zone .hint { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .sample-preview {
+      display: none; flex-direction: column; gap: 8px; background: #0f1623;
+      border: 1px solid var(--border); border-radius: 12px; padding: 10px;
+    }
+    .sample-preview audio { width: 100%; height: 38px; }
+
+    /* شرائح الأوزان */
+    .slider-row { display: flex; flex-direction: column; gap: 5px; }
+    .slider-head { display: flex; justify-content: space-between; font-size: 12.5px; color: #cbd5e1; }
+    .slider-val { color: #6ee7b7; font-weight: 800; direction: ltr; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+    /* الأزرار */
+    .btn {
+      border: none; border-radius: 12px; padding: 12px 14px; font-size: 14.5px;
+      font-weight: 800; cursor: pointer; display: inline-flex; align-items: center;
+      justify-content: center; gap: 8px; transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #042f2e; font-size: 15.5px; padding: 14px;
+    }
+    .btn-secondary { background: var(--card-2); color: #e2e8f0; border: 1px solid var(--border); font-size: 13px; padding: 9px 12px; }
+    .btn-gold { background: rgba(245, 158, 11, 0.16); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.45); font-size: 13px; padding: 9px 12px; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* شريط الحالة */
+    .status-box {
+      display: none; border-radius: 12px; padding: 12px; font-size: 13.5px; line-height: 1.6;
+      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); color: #a7f3d0;
+    }
+    .status-box.error {
+      background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #fecaca;
+    }
+
+    /* بطاقات الأغاني الناتجة */
+    .tracks-list { display: flex; flex-direction: column; gap: 12px; }
+    .track-card {
+      background: var(--card-2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .track-top { display: flex; gap: 12px; align-items: center; }
+    .track-cover {
+      width: 58px; height: 58px; border-radius: 10px; object-fit: cover;
+      background: #0f1623; flex-shrink: 0;
+    }
+    .track-meta { flex: 1; min-width: 0; }
+    .track-name { font-size: 15px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .track-card audio { width: 100%; height: 40px; }
+    .track-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .track-actions a, .track-actions button { flex: 1; min-width: 130px; text-decoration: none; }
+
+    .note { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- الترويسة -->
+    <div class="hero">
+      <div>
+        <h1>🎙️ استوديو سونو V6 الاحترافي</h1>
+        <p>ارفع عينتك الغنائية، طابق الصوت بجودة استوديو صافية، وصدّر أغنيتك بصيغة WAV</p>
+      </div>
+      <div class="credit-pill" id="credit-pill" title="اضغط لفحص الرصيد">
+        الرصيد: <span id="credit-val">--</span>
+      </div>
+    </div>
+
+    <!-- 1. إعداد المفتاح والمزود -->
+    <div class="card">
+      <div class="card-title">
+        <span>1. ربط مفتاح API الخاص بك</span>
+        <span class="badge-tag">يُحفظ في جوالك فقط</span>
+      </div>
+      <div class="grid-2">
+        <div>
+          <label for="provider">المزود (خادم سونو)</label>
+          <select id="provider">
+            <option value="kie">Kie.ai (رصيد تجريبي مجاني عند التسجيل)</option>
+            <option value="sunoapi">SunoAPI.org</option>
+          </select>
+        </div>
+        <div>
+          <label for="model">نموذج سونو المتطور</label>
+          <select id="model">
+            <option value="V6">Suno V6 (الأحدث - جودة استوديو عالية)</option>
+            <option value="V6_WILD">Suno V6 Wild (توزيع إبداعي أوسع)</option>
+            <option value="V6_MINI">Suno V6 Mini (سريع واقتصادي)</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="api-key">مفتاح API Key</label>
+        <input type="password" id="api-key" placeholder="الصق مفتاح API هنا..." autocomplete="off" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="check-credit-btn" type="button">🔄 فحص الرصيد المتبقي</button>
+        <button class="btn btn-secondary" id="toggle-key-btn" type="button">👁️ إظهار المفتاح</button>
+      </div>
+    </div>
+
+    <!-- 2. العينة الغنائية ووضع التوليد -->
+    <div class="card">
+      <div class="card-title">
+        <span>2. العينة الغنائية ومطابقة الصوت</span>
+        <span class="badge-tag">MP3 / WAV / M4A</span>
+      </div>
+
+      <div>
+        <label for="mode">طريقة العمل</label>
+        <select id="mode">
+          <option value="upload-cover">مطابقة العينة وإعادة توزيعها بجودة استوديو (Upload & Cover)</option>
+          <option value="upload-extend">تمديد العينة وإكمال الأغنية بنفس الصوت (Upload & Extend)</option>
+          <option value="generate">توليد أغنية استوديو جديدة (بدون عينة أو عبر Voice ID)</option>
+        </select>
+      </div>
+
+      <div id="sample-section">
+        <div class="upload-zone" id="upload-zone">
+          <div class="icon">🎧</div>
+          <div style="font-weight:700;font-size:14px;" id="upload-label">اضغط هنا لاختيار العينة الغنائية من جوالك</div>
+          <div class="hint">يُفضّل عينة واضحة مدتها 15 إلى 60 ثانية (الحد الأقصى 25 ميجابايت)</div>
+        </div>
+        <input type="file" id="sample-file" accept="audio/*" style="display:none;" />
+
+        <div class="sample-preview" id="sample-preview">
+          <div style="font-size:12.5px;color:#6ee7b7;font-weight:700;" id="sample-status">العينة جاهزة</div>
+          <audio id="sample-audio" controls></audio>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label for="sample-url">أو الصق رابطاً مباشراً للعينة الصوتية (يتعبأ تلقائياً بعد الرفع)</label>
+          <input type="text" id="sample-url" placeholder="https://..." dir="ltr" />
+        </div>
+      </div>
+
+      <div id="voice-id-section" style="display:none;">
+        <label for="persona-id">معرّف الصوت المخصص Voice / Persona ID (اختياري)</label>
+        <input type="text" id="persona-id" placeholder="اتركه فارغاً للتوليد العادي أو ضع voiceId" dir="ltr" />
+      </div>
+    </div>
+
+    <!-- 3. كلمات الأغنية وهندسة الصوت -->
+    <div class="card">
+      <div class="card-title">
+        <span>3. كلمات الأغنية وهندسة الاستوديو</span>
+        <button class="btn btn-gold" id="preset-studio-btn" type="button" style="padding:5px 10px;font-size:12px;">✨ حقن هندسة استوديو صافية</button>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="song-title">عنوان الأغنية</label>
+          <input type="text" id="song-title" placeholder="مثال: يا نجم الليل" maxlength="80" />
+        </div>
+        <div>
+          <label for="vocal-gender">خامة الصوت المطلوبة</label>
+          <select id="vocal-gender">
+            <option value="">تلقائي (حسب العينة)</option>
+            <option value="m">صوت رجالي (Male)</option>
+            <option value="f">صوت نسائي (Female)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="song-style">وصف الأسلوب والهندسة الصوتية (Style Prompt)</label>
+        <textarea id="song-style" style="min-height:80px;" placeholder="مثال: Modern Yemeni Gulf Arabic pop, warm acoustic oud, lush strings, studio mastered, crystal clear dry upfront vocals, zero room reverb, wide stereo mix"></textarea>
+      </div>
+
+      <div>
+        <label for="negative-tags">ما تريد منعه تماماً (إلغاء صوت الغرفة المغلقة)</label>
+        <input type="text" id="negative-tags" dir="ltr" value="muffled vocals, room reverb, boxy acoustics, muddy mix, lo-fi, echoey room, distortion, tinny sound" />
+      </div>
+
+      <div>
+        <label for="song-lyrics">كلمات الأغنية (استخدم [Verse] و [Chorus] لتنظيم اللحن)</label>
+        <textarea id="song-lyrics" placeholder="[Intro]&#10;&#10;[Verse 1]&#10;اكتب كلمات الأغنية هنا...&#10;&#10;[Chorus]&#10;اللازمة هنا..."></textarea>
+      </div>
+
+      <div class="grid-2">
+        <div class="slider-row">
+          <div class="slider-head">
+            <span>قوة مطابقة العينة والصوت</span>
+            <span class="slider-val" id="audio-weight-val">0.80</span>
+          </div>
+          <input type="range" id="audio-weight" min="0.10" max="1.00" step="0.05" value="0.80" />
+        </div>
+        <div class="slider-row">
+          <div class="slider-head">
+            <span>الالتزام بهندسة الاستوديو</span>
+            <span class="slider-val" id="style-weight-val">0.75</span>
+          </div>
+          <input type="range" id="style-weight" min="0.10" max="1.00" step="0.05" value="0.75" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="generate-btn" type="button">🚀 توليد الأغنية الآن بجودة استوديو</button>
+      <div class="status-box" id="status-box"></div>
+    </div>
+
+    <!-- 4. الأغاني الناتجة وتصدير WAV -->
+    <div class="card">
+      <div class="card-title">
+        <span>4. الأغاني الجاهزة وتصدير WAV</span>
+        <button class="btn btn-secondary" id="clear-history-btn" type="button" style="padding:4px 10px;font-size:12px;">مسح السجل</button>
+      </div>
+      <div class="tracks-list" id="tracks-list">
+        <div class="note" style="text-align:center;padding:16px 0;">
+          ستظهر هنا النسختان الناتجتان عن كل طلب مع مشغل صوتي وزر تحويل وتحميل جودة الاستوديو WAV.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // استخدام مخزن Supabase الخاص بك لرفع العينة الصوتية من الجوال وإعطائها رابطاً عاماً لسونو
+    const SUPABASE_URL = "https://bhuhzgdpdxxccffpiyjw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_EcBS-NQRlfbcUJwNsZ7EiQ_DW2ieei6";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const el = (id) => document.getElementById(id);
+
+    // استرجاع الإعدادات المحفوظة على الجوال فقط
+    el("provider").value = localStorage.getItem("suno_provider") || "kie";
+    el("api-key").value = localStorage.getItem("suno_api_key") || "";
+    let savedTracks = JSON.parse(localStorage.getItem("suno_studio_tracks") || "[]");
+
+    el("provider").addEventListener("change", () => localStorage.setItem("suno_provider", el("provider").value));
+    el("api-key").addEventListener("input", () => localStorage.setItem("suno_api_key", el("api-key").value.trim()));
+
+    el("toggle-key-btn").addEventListener("click", () => {
+      const inp = el("api-key");
+      inp.type = inp.type === "password" ? "text" : "password";
+      el("toggle-key-btn").textContent = inp.type === "password" ? "👁️ إظهار المفتاح" : "🙈 إخفاء المفتاح";
+    });
+
+    el("mode").addEventListener("change", () => {
+      const m = el("mode").value;
+      el("sample-section").style.display = m === "generate" ? "none" : "block";
+      el("voice-id-section").style.display = m === "generate" ? "block" : "none";
+    });
+
+    el("audio-weight").addEventListener("input", () => { el("audio-weight-val").textContent = Number(el("audio-weight").value).toFixed(2); });
+    el("style-weight").addEventListener("input", () => { el("style-weight-val").textContent = Number(el("style-weight").value).toFixed(2); });
+
+    // حقن أوامر هندسة الاستوديو لإزالة صوت الغرفة المغلقة
+    el("preset-studio-btn").addEventListener("click", () => {
+      const studioBoost = "Studio mastered, crystal clear dry upfront vocals, zero room reverb, crisp high frequencies, wide stereo mix, warm punchy bass, commercial radio master";
+      const cur = el("song-style").value.trim();
+      if (!cur) {
+        el("song-style").value = "Modern Arabic Khaleeji Yemeni song, warm acoustic oud, emotional strings, " + studioBoost;
+      } else if (!cur.toLowerCase().includes("studio mastered")) {
+        el("song-style").value = cur + ", " + studioBoost;
+      }
+      el("negative-tags").value = "muffled vocals, room reverb, boxy acoustics, muddy mix, lo-fi, echoey room, distortion, tinny sound, phone recording";
+      setStatus("تمت إضافة إعدادات المكساج وهندسة الاستوديو الصافية بنجاح ✨", false);
+    });
+
+    function setStatus(msg, isError = false) {
+      const box = el("status-box");
+      box.style.display = "block";
+      box.className = "status-box" + (isError ? " error" : "");
+      box.innerHTML = msg;
+    }
+
+    // استدعاء API عبر وسيط Vercel الآمن
+    async function callSuno(path, method = "GET", body = null) {
+      const apiKey = el("api-key").value.trim();
+      const provider = el("provider").value;
+      if (!apiKey) throw new Error("يرجى لصق مفتاح API Key أولاً في القسم الأول.");
+
+      const url = `/api/suno?provider=${encodeURIComponent(provider)}&path=${encodeURIComponent(path)}`;
+      const opts = {
+        method,
+        headers: {
+          "Authorization": "Bearer " + apiKey,
+          "Content-Type": "application/json"
+        }
+      };
+      if (body) opts.body = JSON.stringify(body);
+
+      const res = await fetch(url, opts);
+      const data = await res.json();
+      if (!res.ok || (data.code && data.code !== 200)) {
+        throw new Error(data.msg || data.message || `خطأ من الخادم (${res.status})`);
+      }
+      return data;
+    }
+
+    // فحص الرصيد المتبقي
+    async function checkCredits() {
+      try {
+        el("credit-val").textContent = "...";
+        const res = await callSuno("/api/v1/generate/credit", "GET");
+        const credits = typeof res.data === "number" ? res.data : (res.data?.credits ?? res.data?.credit ?? "--");
+        el("credit-val").textContent = credits;
+      } catch (e) {
+        el("credit-val").textContent = "خطأ";
+        setStatus("⚠️ " + e.message, true);
+      }
+    }
+    el("check-credit-btn").addEventListener("click", checkCredits);
+    el("credit-pill").addEventListener("click", checkCredits);
+
+    // رفع العينة الغنائية من الجوال إلى Supabase Storage
+    el("upload-zone").addEventListener("click", () => el("sample-file").click());
+    el("sample-file").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      if (file.size > 25 * 1024 * 1024) {
+        return setStatus("حجم العينة الصوتية أكبر من 25 ميجابايت. يرجى قص مقطع بطول 30 إلى 60 ثانية.", true);
+      }
+
+      try {
+        el("upload-label").textContent = "⏳ جاري رفع العينة الصوتية...";
+        const ext = (file.name.split(".").pop() || "mp3").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const filePath = `studio-samples/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        const { error } = await sb.storage.from("chat-media").upload(filePath, file, {
+          contentType: file.type || "audio/mpeg"
+        });
+        if (error) throw error;
+
+        const publicUrl = sb.storage.from("chat-media").getPublicUrl(filePath).data.publicUrl;
+        el("sample-url").value = publicUrl;
+        el("sample-audio").src = publicUrl;
+        el("sample-preview").style.display = "flex";
+        el("upload-zone").classList.add("ready");
+        el("upload-label").textContent = "✅ تم رفع العينة: " + file.name;
+        el("sample-status").textContent = "✅ العينة مرفوعة وجاهزة للمطابقة عبر سونو";
+      } catch (err) {
+        el("upload-label").textContent = "اضغط هنا لاختيار العينة الغنائية من جوالك";
+        setStatus("تعذر رفع العينة الصوتية: " + (err.message || "تأكد من الاتصال بالإنترنت"), true);
+      }
+    });
+
+    // توليد الأغنية ومتابعة التقدم حتى الاكتمال
+    el("generate-btn").addEventListener("click", async () => {
+      const mode = el("mode").value;
+      const model = el("model").value;
+      const title = el("song-title").value.trim() || "أغنية الاستوديو";
+      const style = el("song-style").value.trim();
+      const lyrics = el("song-lyrics").value.trim();
+      const negativeTags = el("negative-tags").value.trim();
+      const vocalGender = el("vocal-gender").value;
+      const sampleUrl = el("sample-url").value.trim();
+      const personaId = el("persona-id").value.trim();
+      const audioWeight = Number(el("audio-weight").value);
+      const styleWeight = Number(el("style-weight").value);
+      const callBackUrl = `${window.location.origin}/api/suno?cb=1`;
+
+      if (mode !== "generate" && !sampleUrl.startsWith("http")) {
+        return setStatus("⚠️ يرجى رفع العينة الغنائية أولاً (أو وضع رابطها المباشر).", true);
+      }
+      if (!style && !lyrics) {
+        return setStatus("⚠️ يرجى كتابة كلمات الأغنية أو وصف الأسلوب الموسيقي.", true);
+      }
+
+      const btn = el("generate-btn");
+      btn.disabled = true;
+      btn.textContent = "⏳ جاري الإرسال إلى سونو...";
+      setStatus("🚀 تم إرسال طلبك إلى نموذج <b>" + model + "</b>... يرجى الانتظار (يستغرق عادةً 45 إلى 90 ثانية).");
+
+      try {
+        let endpoint = "/api/v1/generate/upload-cover";
+        let payload = {
+          model,
+          title,
+          style,
+          prompt: lyrics,
+          lyrics,
+          instrumental: false,
+          audioWeight,
+          styleWeight,
+          weirdnessConstraint: 0.35,
+          callBackUrl
+        };
+        if (negativeTags) payload.negativeTags = negativeTags;
+        if (vocalGender) payload.vocalGender = vocalGender;
+
+        if (mode === "upload-cover") {
+          endpoint = "/api/v1/generate/upload-cover";
+          payload.uploadUrl = sampleUrl;
+        } else if (mode === "upload-extend") {
+          endpoint = "/api/v1/generate/upload-extend";
+          payload.uploadUrl = sampleUrl;
+        } else {
+          endpoint = "/api/v1/generate";
+          payload.customMode = true;
+          if (personaId) {
+            payload.personaId = personaId;
+            payload.personaModel = "voice_persona";
+          }
+        }
+
+        const startRes = await callSuno(endpoint, "POST", payload);
+        const taskId = startRes.data?.taskId || startRes.data?.task_id;
+        if (!taskId) throw new Error("لم يتم استلام رقم المهمة (taskId) من الخادم.");
+
+        setStatus(`🎵 جاري التوليد والمكساج في سونو (${model})...<br>رقم الطلب: <code>${taskId}</code>`);
+        await pollMusicTask(taskId, model);
+        checkCredits();
+      } catch (err) {
+        setStatus("❌ " + err.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🚀 توليد الأغنية الآن بجودة استوديو";
+      }
+    });
+
+    async function pollMusicTask(taskId, modelName) {
+      for (let attempt = 1; attempt <= 45; attempt++) {
+        await new Promise(r => setTimeout(r, 5000));
+        const info = await callSuno(`/api/v1/generate/record-info?taskId=${encodeURIComponent(taskId)}`, "GET");
+        const d = info.data || {};
+        const status = String(d.status || "").toUpperCase();
+        const tracks = d.response?.sunoData || d.sunoData || [];
+
+        if (status === "PENDING" || status === "TEXT_SUCCESS") {
+          setStatus(`⏳ جاري المعالجة الصوتية في سونو... (${attempt * 5} ثانية) — الحالة: <b>${status}</b>`);
+        } else if (status === "FIRST_SUCCESS") {
+          setStatus(`✨ جهزت النسخة الأولى وجاري إكمال النسخة الثانية... (${attempt * 5} ثانية)`);
+          if (tracks.length) saveAndRenderTracks(taskId, tracks, modelName);
+        } else if (status === "SUCCESS") {
+          setStatus("✅ اكتمل إنتاج الأغنية بنجاح! استمع للنسختين بالأسفل واضغط «تصدير WAV» لأفضل جودة استوديو.");
+          if (tracks.length) saveAndRenderTracks(taskId, tracks, modelName);
+          return;
+        } else if (status.includes("FAIL") || status.includes("ERROR")) {
+          throw new Error(d.errorMessage || "فشل توليد الأغنية في الخادم: " + status);
+        }
+      }
+      throw new Error("انتهت مهلة الانتظار، تحقق من لوحة حسابك لدى المزود فقد تكون الأغنية قد اكتملت.");
+    }
+
+    function saveAndRenderTracks(taskId, tracks, modelName) {
+      tracks.forEach((t, idx) => {
+        const audioUrl = t.audioUrl || t.audio_url || t.sourceAudioUrl || t.source_audio_url || t.streamAudioUrl || t.stream_audio_url;
+        if (!audioUrl) return;
+        const id = t.id || (taskId + "_" + idx);
+        const existingIdx = savedTracks.findIndex(x => x.id === id);
+        const item = {
+          id,
+          taskId,
+          title: t.title || ("أغنية " + (idx + 1)),
+          audioUrl,
+          imageUrl: t.imageUrl || t.image_url || "",
+          model: t.modelName || t.model_name || modelName,
+          duration: t.duration ? Math.round(t.duration) + " ثانية" : "",
+          wavUrl: existingIdx >= 0 ? savedTracks[existingIdx].wavUrl : ""
+        };
+        if (existingIdx >= 0) savedTracks[existingIdx] = item;
+        else savedTracks.unshift(item);
+      });
+      localStorage.setItem("suno_studio_tracks", JSON.stringify(savedTracks.slice(0, 20)));
+      renderTracks();
+    }
+
+    // تحويل وتصدير الأغنية بجودة WAV غير مضغوطة
+    async function exportWav(trackId, taskId, btnEl) {
+      const originalText = btnEl.textContent;
+      btnEl.disabled = true;
+      btnEl.textContent = "⏳ جاري التحويل إلى WAV...";
+      try {
+        const callBackUrl = `${window.location.origin}/api/suno?cb=1`;
+        const res = await callSuno("/api/v1/wav/generate", "POST", {
+          taskId,
+          audioId: trackId,
+          callBackUrl
+        });
+        const wavTaskId = res.data?.taskId || res.data?.task_id;
+        if (!wavTaskId) throw new Error("تعذر بدء تحويل WAV.");
+
+        for (let i = 0; i < 25; i++) {
+          await new Promise(r => setTimeout(r, 4000));
+          const info = await callSuno(`/api/v1/wav/record-info?taskId=${encodeURIComponent(wavTaskId)}`, "GET");
+          const d = info.data || {};
+          const status = String(d.status || "").toUpperCase();
+          if (status === "SUCCESS") {
+            const wavUrl = d.response?.audioWavUrl || d.audioWavUrl || d.wavUrl || d.audioUrl || d.audio_url;
+            if (!wavUrl) throw new Error("اكتمل التحويل لكن لم يظهر رابط WAV.");
+            const found = savedTracks.find(x => x.id === trackId);
+            if (found) {
+              found.wavUrl = wavUrl;
+              localStorage.setItem("suno_studio_tracks", JSON.stringify(savedTracks));
+            }
+            renderTracks();
+            setStatus("✅ ملف الاستوديو WAV جاهز للتحميل الآن!");
+            return;
+          }
+          if (status.includes("FAIL")) throw new Error(d.errorMessage || "فشل تحويل WAV.");
+        }
+        throw new Error("استغرق تحويل WAV وقتاً أطول من المعتاد، حاول مجدداً.");
+      } catch (err) {
+        setStatus("❌ خطأ في تصدير WAV: " + err.message, true);
+        btnEl.disabled = false;
+        btnEl.textContent = originalText;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function renderTracks() {
+      const list = el("tracks-list");
+      if (!savedTracks.length) {
+        list.innerHTML = '<div class="note" style="text-align:center;padding:16px 0;">ستظهر هنا النسختان الناتجتان عن كل طلب مع مشغل صوتي وزر تحويل وتحميل جودة الاستوديو WAV.</div>';
+        return;
+      }
+      list.innerHTML = "";
+      savedTracks.forEach(t => {
+        const card = document.createElement("div");
+        card.className = "track-card";
+        card.innerHTML = `
+          <div class="track-top">
+            ${t.imageUrl ? `<img class="track-cover" src="${escapeHtml(t.imageUrl)}" alt="غلاف" />` : `<div class="track-cover" style="display:flex;align-items:center;justify-content:center;font-size:24px;">🎵</div>`}
+            <div class="track-meta">
+              <div class="track-name">${escapeHtml(t.title)}</div>
+              <div class="track-sub">النموذج: ${escapeHtml(t.model)} ${t.duration ? "• " + escapeHtml(t.duration) : ""}</div>
+            </div>
+          </div>
+          <audio controls src="${escapeHtml(t.audioUrl)}"></audio>
+          <div class="track-actions">
+            <a class="btn btn-secondary" href="${escapeHtml(t.audioUrl)}" target="_blank" download>⬇️ تحميل MP3</a>
+            ${t.wavUrl
+              ? `<a class="btn btn-gold" href="${escapeHtml(t.wavUrl)}" target="_blank" download>💎 تحميل استوديو WAV</a>`
+              : `<button class="btn btn-gold wav-btn" type="button">💎 تصدير جودة WAV</button>`
+            }
+          </div>
+        `;
+        const wavBtn = card.querySelector(".wav-btn");
+        if (wavBtn) wavBtn.addEventListener("click", () => exportWav(t.id, t.taskId, wavBtn));
+        list.appendChild(card);
+      });
+    }
+
+    el("clear-history-btn").addEventListener("click", () => {
+      if (confirm("مسح سجل الأغاني المعروضة من هذه الصفحة؟")) {
+        savedTracks = [];
+        localStorage.removeItem("suno_studio_tracks");
+        renderTracks();
+      }
+    });
+
+    renderTracks();
+    if (el("api-key").value) checkCredits();
+  </script>
+</body>
+  </html>
