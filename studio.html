@@ -364,7 +364,7 @@
     async function checkCredits() {
       try {
         el("credit-val").textContent = "...";
-        const res = await callSuno("/api/v1/generate/credit", "GET");
+        const res = await callSuno("/api/v1/chat/credit", "GET");
         const credits = typeof res.data === "number" ? res.data : (res.data?.credits ?? res.data?.credit ?? "--");
         el("credit-val").textContent = credits;
       } catch (e) {
